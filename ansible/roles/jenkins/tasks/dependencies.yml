@@ -1,0 +1,5 @@
+---
+- name: Install dependencies
+  become: true
+  apt: name={{ item }} state=installed
+  with_items: jenkins.dependencies

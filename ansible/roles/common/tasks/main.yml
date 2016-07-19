@@ -1,0 +1,96 @@
+- name: flush apt lists
+  become: true
+  file: >
+    path=/var/lib/apt/lists
+    state=absent
+  changed_when: false
+
+- name: create empty apt lists
+  become: true
+  file: >
+    path=/var/lib/apt/lists
+    state=directory
+  changed_when: false
+
+- name: apt-get update
+  become: true
+  apt: update_cache=true
+  tags:
+    - nodejs_upgrade
+
+- name: install packages
+  become: true
+  apt: pkg={{ item }}
+  with_items:
+    - build-essential
+    - ntp
+    - vim
+    - htop
+    - curl
+    - screen
+    - python-dev
+    - python-pip # for ansible
+    - python-pycurl # for ansible
+
+- name: set locales to be generated
+  become: true
+  debconf: >
+    name=locales
+    question=locales/locales_to_be_generated
+    value="en_US.UTF-8 UTF-8"
+    vtype=multiselect
+  notify: reconfigure locales
+
+- name: set default environment locale
+  become: true
+  debconf: >
+    name=locales
+    question=locales/default_environment_locale
+    value=en_US.UTF-8
+    vtype=select
+  notify: reconfigure locales
+
+- name: set timezone
+  become: true
+  debconf: >
+    name=tzdata
+    question=tzdata/Zones/Etc
+    value=UTC
+    vtype=select
+  notify: reconfigure timezone
+
+- name: enable passwordless sudo by any user to "sudo" group
+  become: true
+  copy: >
+    content="%sudo   ALL=(ALL:ALL) NOPASSWD:ALL\n"
+    dest=/etc/sudoers.d/nopasswd
+    owner=root
+    group=root
+    mode=0440
+    validate="visudo -cf %s"
+
+- name: add current user to "sudo" group
+  become: true
+  user: >
+    name={{ ansible_user_id }}
+    groups=sudo
+    append=true
+
+- name: set nofile limits
+  become: true
+  copy: >
+    src=nofile.conf
+    dest=/etc/security/limits.d/nofile.conf
+    owner=root
+    group=root
+    mode=0644
+
+- name: add SSH keys
+  authorized_key: >
+    user={{ ansible_user_id }}
+    key=https://github.com/{{ item }}.keys
+  with_items: '{{ ssh_keys }}'
+  tags: authorized_keys
+
+- name: flush common handlers
+  meta: flush_handlers

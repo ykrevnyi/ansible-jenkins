@@ -1,0 +1,48 @@
+---
+- name: Modify variables in init file
+  become: true
+  lineinfile:
+    dest: "{{ jenkins_init_file }}"
+    insertafter: '^{{ item.option }}='
+    regexp: '^{{ item.option}}=\"\${{ item.option }} '
+    line: '{{ item.option }}="${{ item.option }} {{ item.value }}"'
+    state: present
+  with_items:
+      "{{ jenkins_init_changes }}"
+  register: jenkins_init_prefix
+
+- name: Immediately restart Jenkins on init config changes.
+  become: true
+  service: name=jenkins state=restarted
+  when: jenkins_init_prefix.changed
+
+- name: Set HTTP port in Jenkins config.
+  become: true
+  lineinfile:
+    backrefs: yes
+    dest: "{{ jenkins_init_file }}"
+    regexp: '^HTTP_PORT='
+    line: 'HTTP_PORT={{ port }}'
+  register: jenkins_http_config
+
+- name: Create custom init scripts directory.
+  become: true
+  file:
+    path: /var/lib/jenkins/init.groovy.d
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: 0775
+
+- name: Configure Jenkins default users.
+  become: true
+  template:
+    src: basic-security.groovy
+    dest: /var/lib/jenkins/init.groovy.d/basic-security.groovy
+  register: jenkins_users_config
+  when: jenkins_install.changed
+
+- name: Immediately restart Jenkins on http or user changes.
+  become: true
+  service: name=jenkins state=restarted
+  when: jenkins_users_config.changed or jenkins_http_config.changed

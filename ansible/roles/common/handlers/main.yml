@@ -1,0 +1,9 @@
+- name: reconfigure locales
+  become: true
+  command: >
+    /usr/sbin/dpkg-reconfigure -f noninteractive locales
+
+- name: reconfigure timezone
+  become: true
+  command: >
+    /usr/sbin/dpkg-reconfigure -f noninteractive tzdata

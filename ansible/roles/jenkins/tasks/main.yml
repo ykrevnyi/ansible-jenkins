@@ -1,0 +1,32 @@
+---
+
+- include: repo.yml
+
+- name: Log in to Jenkins CLI if auth config is available
+  ignore_errors: yes
+  command: >
+    {{ jenkins_cli_cmd }} login --username {{ jenkins_admin_user }} --password {{ jenkins_admin_password }}
+  when: jenkins_admin_user is defined and jenkins_admin_password is defined
+
+- include: dependencies.yml
+
+- name: Install Jenkins
+  become: true
+  apt: name=jenkins state=latest
+  register: jenkins_install
+
+- include: config.yml
+
+- include: cli.yml
+
+- include: plugins.yml
+
+- name: Wait for Jenkins to start up before proceeding.
+  shell: "curl -D - --silent --max-time 5 {{jenkins_api_url}}cli/"
+  register: result
+  until: (result.stdout.find("403 Forbidden") != -1) or (result.stdout.find("200 OK") != -1) and (result.stdout.find("Please wait while") == -1)
+  retries: "{{ jenkins_connection_retries }}"
+  delay: "{{ jenkins_connection_delay }}"
+  changed_when: false
+  notify:
+    - 'Restart Jenkins'
