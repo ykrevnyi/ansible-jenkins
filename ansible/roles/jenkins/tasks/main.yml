@@ -2,12 +2,6 @@
 
 - include: repo.yml
 
-- name: Log in to Jenkins CLI if auth config is available
-  ignore_errors: yes
-  command: >
-    {{ jenkins_cli_cmd }} login --username {{ jenkins_admin_user }} --password {{ jenkins_admin_password }}
-  when: jenkins_admin_user is defined and jenkins_admin_password is defined
-
 - include: dependencies.yml
 
 - name: Install Jenkins
@@ -18,6 +12,13 @@
 - include: config.yml
 
 - include: cli.yml
+
+- name: Log in to Jenkins CLI if auth config is available
+  become: true
+  ignore_errors: yes
+  command: >
+    {{ jenkins_cli_cmd }} login --username {{ jenkins_admin_user }} --password {{ jenkins_admin_password }}
+  when: jenkins_admin_user is defined and jenkins_admin_password is defined
 
 - include: plugins.yml
 
