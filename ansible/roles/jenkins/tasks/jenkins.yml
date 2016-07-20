@@ -1,0 +1,6 @@
+---
+
+- name: Install Jenkins
+  become: true
+  apt: name=jenkins state=latest
+  register: jenkins_install

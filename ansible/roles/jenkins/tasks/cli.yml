@@ -1,5 +1,5 @@
 ---
-# Handle plugins
+
 - name: "{{ startup_delay_s | default(10) }}s delay while starting Jenkins"
   wait_for: host={{ jenkins_host }} port={{ port }} delay={{ startup_delay_s | default(10) }}
   when: jenkins_install.changed or jenkins_http_config.changed or jenkins_init_prefix.changed
@@ -16,18 +16,10 @@
   retries: 5
   delay: 10
 
-- name: Get Jenkins updates
+- name: Get Jenkins updates without
   become: true
-  get_url: url=http://updates.jenkins-ci.org/update-center.json dest={{ jenkins.updates_dest }} thirsty=yes mode=0440 timeout=30 use_proxy={{proxy}} validate_certs=False
-  environment: proxy_env
+  get_url: url=https://updates.jenkins-ci.org/update-center.json dest={{ jenkins.updates_dest }} thirsty=yes mode=0440 timeout=30 validate_certs=False
   register: jenkins_updates
-  when: proxy
-
-- name: Get Jenkins updates without proxy
-  become: true
-  get_url: url=https://updates.jenkins-ci.org/update-center.json dest={{ jenkins.updates_dest }} thirsty=yes mode=0440 timeout=30 use_proxy={{proxy}} validate_certs=False
-  register: jenkins_updates
-  when: not proxy
 
 - name: Update-center Jenkins
   become: true
@@ -35,3 +27,10 @@
   when: jenkins_updates.changed
   notify:
     - 'Restart Jenkins'
+
+- name: Log in to Jenkins CLI if auth config is available
+  become: true
+  ignore_errors: yes
+  command: >
+    {{ jenkins_cli_cmd }} login --username {{ jenkins_admin_user }} --password {{ jenkins_admin_password }}
+  when: jenkins_admin_user is defined and jenkins_admin_password is defined

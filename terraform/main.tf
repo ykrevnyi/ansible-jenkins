@@ -9,10 +9,6 @@ resource "aws_instance" "example" {
   instance_type = "t2.micro"
   key_name = "yippie-ec2"
   security_groups = ["jenkins"]
-
-  provisioner "local-exec" {
-    command = "echo ${aws_instance.example.public_ip} > file.txt"
-  }
 }
 
 resource "aws_ebs_volume" "example" {
@@ -30,12 +26,16 @@ resource "aws_volume_attachment" "ebs_att" {
 }
 
 resource "aws_eip" "ip" {
-  instance = "${aws_instance.example.id}"
-  depends_on = ["aws_instance.example"]
+  vpc = true
+}
+
+resource "aws_eip_association" "eip_assoc" {
+  instance_id = "${aws_instance.example.id}"
+  allocation_id = "${aws_eip.ip.id}"
 }
 
 resource "aws_security_group" "jenkins-ssh" {
-  name = "allow_all"
+  name = "jenkins-ssh"
   description = "Allow all traffic for Jenkins CI"
 
   ingress {

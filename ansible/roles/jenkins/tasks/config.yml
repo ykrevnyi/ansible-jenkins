@@ -1,4 +1,5 @@
 ---
+
 - name: Modify variables in init file
   become: true
   lineinfile:

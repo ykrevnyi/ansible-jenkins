@@ -8,12 +8,11 @@ jenkins:
     - '{{ java_version }}-jdk'
     - 'git'
     - 'curl'
-  cli_dest: '{{ jenkins_dest }}/jenkins-cli.jar' # Jenkins CLI destination
-  updates_dest: '{{ jenkins_dest }}/updates_jenkins.json' # Jenkins updates file
+  cli_dest: '{{ jenkins_dest }}/jenkins-cli.jar'
+  updates_dest: '{{ jenkins_dest }}/updates_jenkins.json'
 jenkins_host: "jenkins.dev"
 jenkins_api_url: "http://{{jenkins_host}}:{{ port }}{{ prefix }}"
 jenkins_cli_cmd: "java -jar {{ jenkins.cli_dest }} -s {{ jenkins_api_url }}"
 jenkins_init_file: /etc/default/jenkins
-jenkins_java_options: "-Djenkins.install.runSetupWizard=false"
 jenkins_init_changes:
-  - {option: "JAVA_ARGS", value: "{{ jenkins_java_options }}"}
+  - {option: "JAVA_ARGS", value: "-Djenkins.install.runSetupWizard=false"}

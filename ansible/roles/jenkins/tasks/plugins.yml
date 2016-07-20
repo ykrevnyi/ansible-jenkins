@@ -1,10 +1,4 @@
 ---
-- template: src=proxy.groovy dest={{ jenkins_dest }}/proxy.groovy
-  when: proxy|bool
-
-- name: add proxy settings configuration
-  shell: cat {{ jenkins_dest }}/proxy.groovy | {{ jenkins_cli_cmd }} groovy =
-  when: proxy|bool
 
 - name: List plugins
   shell: "{{ jenkins_cli_cmd }} list-plugins | cut -f 1 -d ' '"
