@@ -16,4 +16,4 @@ jenkins_cli_cmd: "java -jar {{ jenkins.cli_dest }} -s {{ jenkins_api_url }}"
 jenkins_init_file: /etc/default/jenkins
 jenkins_java_options: "-Djenkins.install.runSetupWizard=false"
 jenkins_init_changes:
-  - {option: "JENKINS_JAVA_OPTIONS", value: "{{ jenkins_java_options }}"}
+  - {option: "JAVA_ARGS", value: "{{ jenkins_java_options }}"}

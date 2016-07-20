@@ -3,10 +3,9 @@ placeholder: 'placeholder'
 port: 8080
 plugins:
   - 'github'
+  - 'workflow-aggregator'
   - 'gravatar'
-#   - 'ldap'
-#   - 'translation'
-#   - 'preSCMbuildstep'
+  - 'ws-cleanup'
 
 proxy: no
 proxy_host: localhost
