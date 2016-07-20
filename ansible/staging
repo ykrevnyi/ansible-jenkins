@@ -1,0 +1,6 @@
+[jenkins]
+52.42.149.166
+
+[all:vars]
+ansible_ssh_user = ubuntu
+ansible_ssh_private_key_file = ~/.ssh/yippie-ec2.pem

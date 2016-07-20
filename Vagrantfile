@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
 
     jenkins_config.vm.provision "ansible" do |ansible|
       ansible.playbook = "ansible/site.yml"
-      ansible.inventory_path = "ansible/inventory.ini"
+      ansible.inventory_path = "ansible/vagrant"
       ansible.limit = "all"
     end
   end
